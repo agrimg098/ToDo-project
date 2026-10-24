@@ -1,0 +1,97 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Taskflow | Django Todo</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <main class="page-shell">
+        <section class="app-card">
+            <header class="topbar">
+                <div class="brand-mark">✓</div>
+                <div>
+                    <p class="eyebrow">YOUR PERSONAL WORKSPACE</p>
+                    <h1>Taskflow<span>.</span></h1>
+                </div>
+            </header>
+
+            <p class="intro">Small steps. Clear mind. Get things done.</p>
+
+            <section class="stats" aria-label="Task summary">
+                <div><strong>{{ total_count }}</strong><span>Total tasks</span></div>
+                <div><strong>{{ pending_count }}</strong><span>To do</span></div>
+                <div><strong>{{ completed_count }}</strong><span>Completed</span></div>
+            </section>
+
+            {% if messages %}
+                <div class="messages" aria-live="polite">
+                    {% for message in messages %}
+                        <p class="message {{ message.tags }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" class="add-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add">
+                <label class="sr-only" for="task-title">New task</label>
+                <input id="task-title" type="text" name="title" maxlength="200"
+                       placeholder="What needs your attention?" autocomplete="off" required>
+                <button type="submit" class="primary-button">Add task <span>＋</span></button>
+            </form>
+
+            <div class="list-heading">
+                <h2>Your tasks</h2>
+                {% if completed_count %}
+                <form method="post" action="{% url 'todo:clear_completed' %}">
+                    {% csrf_token %}
+                    <button class="text-button" type="submit">Clear completed</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <div class="task-list">
+                {% for task in tasks %}
+                    <article class="task-row {% if task.is_completed %}is-complete{% endif %}">
+                        <form method="post" action="{% url 'todo:toggle' task.id %}" class="toggle-form">
+                            {% csrf_token %}
+                            <button class="check-button" type="submit" aria-label="Toggle completion">
+                                {% if task.is_completed %}✓{% endif %}
+                            </button>
+                        </form>
+                        <div class="task-content">
+                            <p class="task-title">{{ task.title }}</p>
+                            <time datetime="{{ task.created_at|date:'c' }}">Added {{ task.created_at|date:"M j, Y · g:i A" }}</time>
+                        </div>
+                        <details class="edit-menu">
+                            <summary aria-label="Edit task">Edit</summary>
+                            <form method="post" action="{% url 'todo:edit' task.id %}" class="edit-form">
+                                {% csrf_token %}
+                                <label for="edit-{{ task.id }}">Edit task</label>
+                                <input id="edit-{{ task.id }}" type="text" name="title" value="{{ task.title }}" maxlength="200" required>
+                                <button type="submit" class="small-button">Save</button>
+                            </form>
+                        </details>
+                        <form method="post" action="{% url 'todo:delete' task.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-button" aria-label="Delete task" title="Delete task">×</button>
+                        </form>
+                    </article>
+                {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-icon">✦</div>
+                        <h3>A fresh start</h3>
+                        <p>Your list is empty. Add a task above to get moving.</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <footer class="app-footer"><span>Built with Django</span><span>One task at a time ✦</span></footer>
+        </section>
+        <p class="page-note">A simple task manager for everyday focus.</p>
+    </main>
+</body>
+</html>

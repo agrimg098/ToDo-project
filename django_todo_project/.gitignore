@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local database (keep generated locally; sample data can be seeded)
+db.sqlite3
+
+# Environment/editor files
+.env
+.vscode/
+.idea/
+.DS_Store
